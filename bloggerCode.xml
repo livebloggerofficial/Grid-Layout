@@ -1,0 +1,211 @@
+<!-- CSS -->
+
+@import url("https://fonts.googleapis.com/css2?family=Rubik:wght@400;600&display=swap");
+
+.blog-posts-container {
+  max-width: 800px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  font-family: "Rubik", sans-serif;
+}
+
+.blog-posts-container img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+.blog-posts-container .blog-post {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 6px 30px -8px rgba(0, 0, 0, 0.3);
+}
+
+.blog-posts-container .text-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.blog-posts-container .label {
+  font-size: 13px;
+  text-transform: uppercase;
+  font-weight: bold;
+  color: #4c5bff;
+}
+
+.blog-posts-container h3.post-title {
+  font-size: 20px;
+  margin: 16px 0;
+}
+
+.blog-posts-container .summary {
+  line-height: 1.8;
+  font-size: 15px;
+	max-height: 56px;
+    overflow: hidden;
+}
+
+.blog-posts-container .read-more-btn {
+  text-transform: uppercase;
+  font-size: 13px;
+  text-decoration: none;
+  color: #000;
+  margin: 8px 0;
+  display: inline-block;
+  background: #ecedfa;
+  padding: 4px 8px;
+  border-radius: 10px;
+  align-self: flex-end;
+  transition: all 400ms ease;
+}
+
+.blog-posts-container .read-more-btn:hover {
+  background: #b4b9ff;
+}
+
+.blog-posts-container .blog-post:first-child {
+  grid-column: 1/3;
+  display: flex;
+  align-items: center;
+}
+
+.blog-posts-container .blog-post:first-child img {
+  width: 240px;
+  display: flex;
+}
+
+@media (max-width: 700px) {
+  .blog-posts-container .blog-post:first-child {
+    grid-column: 1;
+    flex-direction: column;
+    align-items: normal;
+  }
+
+  .blog-posts-container .blog-post:first-child img {
+    width: 100%;
+  }
+
+  .blog-posts-container {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .blog-posts-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.blog-posts-container img {
+	max-width: unset;
+}
+
+.blog-posts-container .blog-post {
+	background: #fff;
+}
+
+
+.load-more-btn {
+	margin: 24px auto;
+	display: block;
+	padding: 8px 32px;
+	border-radius: 10px;
+	border: none;
+	background: #222;
+	color: #fff;
+}
+
+
+<!-- JavaScript -->
+
+<script>
+      
+      let allPosts = [];
+
+const blogPostsContainer = document.querySelector(&quot;.blog-posts-container&quot;);
+
+const generatePostsHTML = () =&gt; {
+      
+      blogPostsContainer.innerHTML = &#39;&#39;;
+      
+  allPosts.forEach((p) =&gt; {
+      
+      const title = p.title.$t;
+      const thumbnail = p.media$thumbnail ? p.media$thumbnail.url.replace(&#39;/s72&#39;, &#39;/s300&#39;) : &#39;https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEip1QIe8WqJG68XehJk0xX97svzLf_HggIlvTjSvEI-499g5TDN57iutao5lohiQSw-W_RdmCa0GN4ircgv6VoB4yWkLkgP8Wx_aACXbP38OqSrwTkLv9yAdXzap5xqlLjUWU5Qm34Oh9JSqjZEtwqzJCnaOv7BlRUtg3bEKZADPUz103kPFATNQp3oHuK-/s1600/thumbnail-placeholder.png&#39;;
+      const label = p.category ? p.category[0].term : &#39;Uncategorized&#39;;
+      const summary = p.summary.$t;
+      const link = p.link[4].href;
+      
+      
+    const HTML = `<div class='thumbnail'>
+      <a href='${link}'>
+        <img alt='${title}' src='${thumbnail}'/>
+      </a>
+      </div>
+
+      <div class='text-content'>
+        <div class='label'>${label}</div>
+        <a href='${link}'>
+        <h3 class='post-title'>
+          ${title}
+        </h3>
+        </a>
+        <div class='summary'>
+          ${summary}
+        </div>
+        <a class='read-more-btn' href='${link}'>Read More...</a>
+      </div>`;
+
+    const blogPost = document.createElement(&quot;div&quot;);
+    blogPost.classList.add(&quot;blog-post&quot;);
+    blogPost.innerHTML = HTML;
+
+    blogPostsContainer.appendChild(blogPost);
+  });
+};
+
+      
+const handleAllPosts = (data) =&gt; {      
+      allPosts = data.feed.entry;
+  generatePostsHTML();
+      
+}
+
+const loadMoreBtn = document.querySelector(&#39;.load-more-btn&#39;);
+      
+let currentPage = 1;
+const postsPerPage = 5;
+      
+const loadMorePosts = async () =&gt; {
+      
+  const response = await fetch(`https://(yourwebsite).blogspot.com/feeds/posts/summary?alt=json&amp;max-results=${postsPerPage}&amp;start-index=${currentPage * postsPerPage + 1}`);    
+      
+      if (response.ok) {
+        const data = await response.json();
+        const entries = data.feed.entry;
+      
+        if (entries &amp;&amp; entries.length &gt; 0) {
+          allPosts.push(...entries);
+          generatePostsHTML();
+          currentPage++;
+      
+          if (entries.length &lt; postsPerPage) {
+            loadMoreBtn.style.display = &#39;none&#39;                                   
+      }
+        } else {
+          loadMoreBtn.style.display = &#39;none&#39;
+        }
+      
+      }      
+}
+
+loadMoreBtn.addEventListener(&#39;click&#39;, () =&gt; {
+  loadMorePosts();      
+});
+      
+</script>
+    
+<script src='/feeds/posts/summary?alt=json-in-script&amp;callback=handleAllPosts&amp;max-results=5'/> 
